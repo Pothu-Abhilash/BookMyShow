@@ -1,2 +1,7 @@
-package com.acciojob.BookMyShow.Enums;public enum SeatStatus {
+package com.acciojob.BookMyShow.Enums;
+
+public enum SeatStatus {
+
+    AVAILABLE,
+    BOOKED;
 }

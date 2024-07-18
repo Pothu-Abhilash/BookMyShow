@@ -7,17 +7,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "theaters")
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -33,8 +31,10 @@ public class Theater {
 
     private Integer noOfScreens;
 
+
     //Bidirectional mapping in the parent to keep a record of the child
     @OneToMany(mappedBy = "theater",cascade = CascadeType.ALL)
     private List<TheaterSeat> theaterSeatList = new ArrayList<>();
+
 
 }

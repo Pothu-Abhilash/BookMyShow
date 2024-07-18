@@ -2,15 +2,15 @@ package com.acciojob.BookMyShow.Controller;
 
 import com.acciojob.BookMyShow.Request.AddMovieRequest;
 import com.acciojob.BookMyShow.Request.UpdateMovieRequest;
+import com.acciojob.BookMyShow.Response.MoviesInTheaterResponse;
+import com.acciojob.BookMyShow.Response.RecommendMovies;
 import com.acciojob.BookMyShow.Service.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("movie")
@@ -31,5 +31,16 @@ public class MovieController {
 
         String response = movieService.updateMovie(updateMovieRequest);
         return new ResponseEntity(response,HttpStatus.OK);
+    }
+
+    @GetMapping("getMoviePresentInTheaters")
+    public  ResponseEntity<List> getMoviesPresentInTheater(@RequestParam("movieName") String movieName){
+        List<MoviesInTheaterResponse> moviesInTheaterResponseList = movieService.getMoviesPresentInTheater(movieName);
+        return new ResponseEntity<>( moviesInTheaterResponseList,HttpStatus.OK);
+    }
+
+    @GetMapping("recommandMovies")
+    public ResponseEntity<List<RecommendMovies>> recommandMovies(){
+        return new ResponseEntity<>(movieService.recommandMovies(),HttpStatus.OK);
     }
 }

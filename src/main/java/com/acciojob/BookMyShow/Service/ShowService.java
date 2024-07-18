@@ -1,11 +1,13 @@
 package com.acciojob.BookMyShow.Service;
 
+import com.acciojob.BookMyShow.Enums.SeatStatus;
 import com.acciojob.BookMyShow.Models.*;
 import com.acciojob.BookMyShow.Repository.MovieRepository;
 import com.acciojob.BookMyShow.Repository.ShowRepository;
 import com.acciojob.BookMyShow.Repository.ShowSeatRepository;
 import com.acciojob.BookMyShow.Repository.TheaterRepository;
 import com.acciojob.BookMyShow.Request.AddShowRequest;
+import com.acciojob.BookMyShow.Response.ShowListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +18,7 @@ import java.util.List;
 public class ShowService {
 
     @Autowired
-    private ShowRepository showRepository;
+    private  ShowRepository showRepository;
 
     @Autowired
     private TheaterRepository theaterRepository;
@@ -30,14 +32,16 @@ public class ShowService {
     public String addShow(AddShowRequest showRequest) {
 
         Movie movie = movieRepository.findMovieByMovieName(showRequest.getMovieName());
-        Theater theater = theaterRepository.findById(showRequest.getTheaterId()).get();
+       Theater theater = theaterRepository.findById(showRequest.getTheaterId()).get();
 
         //Add validations on if movie and theater are valid scenarios
-        Show show = Show.builder().showDate(showRequest.getShowDate())
+        Show show = Show.builder()
+                .showDate(showRequest.getShowDate())
                 .showTime(showRequest.getShowTime())
                 .movie(movie)
                 .theater(theater)
                 .build();
+
         show = showRepository.save(show);
 
 
@@ -50,7 +54,7 @@ public class ShowService {
 
             ShowSeat showSeat = ShowSeat.builder().seatNo(theaterSeat.getSeatNo())
                     .seatType(theaterSeat.getSeatType())
-                    .isBooked(Boolean.FALSE)
+                    .seatStatus(SeatStatus.AVAILABLE)
                     .isFoodAttached(Boolean.FALSE)
                     .show(show)
                     .build();
@@ -62,5 +66,11 @@ public class ShowService {
 
         showSeatRepository.saveAll(showSeatList);
         return "The show has been saved to the DB with showId "+show.getShowId();
+    }
+
+    public ShowListResponse getShowList(){
+
+        ShowListResponse showListResponse = ShowListResponse.builder().showList(showRepository.findAll()).build();
+        return showListResponse;
     }
 }

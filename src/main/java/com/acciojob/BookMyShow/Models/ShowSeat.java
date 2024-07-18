@@ -1,5 +1,6 @@
 package com.acciojob.BookMyShow.Models;
 
+import com.acciojob.BookMyShow.Enums.SeatStatus;
 import com.acciojob.BookMyShow.Enums.SeatType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -29,7 +30,7 @@ public class ShowSeat {
     private String seatNo;
     @Enumerated(value = EnumType.STRING)
     private SeatType seatType;
-    private Boolean isBooked;
+    private SeatStatus seatStatus;
     private Boolean isFoodAttached;
 
     @JoinColumn

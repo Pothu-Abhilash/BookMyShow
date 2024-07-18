@@ -31,6 +31,7 @@ public class Ticket {
     private String theaterName;
 
     private Integer totalAmount;
+    private LocalDate bookedDate;
 
     @JoinColumn
     @ManyToOne

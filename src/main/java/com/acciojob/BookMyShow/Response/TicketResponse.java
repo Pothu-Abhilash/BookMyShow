@@ -25,4 +25,5 @@ public class TicketResponse {
     private String theaterName;
 
     private Integer totalAmount;
+    private LocalDate bookedDate;
 }

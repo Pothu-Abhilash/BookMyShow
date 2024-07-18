@@ -1,12 +1,15 @@
 package com.acciojob.BookMyShow.Service;
 
 import com.acciojob.BookMyShow.Enums.SeatType;
+import com.acciojob.BookMyShow.Models.Show;
 import com.acciojob.BookMyShow.Models.Theater;
 import com.acciojob.BookMyShow.Models.TheaterSeat;
 import com.acciojob.BookMyShow.Repository.TheaterRepository;
 import com.acciojob.BookMyShow.Repository.TheaterSeatsRepository;
 import com.acciojob.BookMyShow.Request.AddTheaterRequest;
 import com.acciojob.BookMyShow.Request.AddTheaterSeatRequest;
+import com.acciojob.BookMyShow.Response.ShowListResponse;
+import com.acciojob.BookMyShow.Response.TheaterMovies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,9 @@ public class TheaterService {
     private TheaterRepository theaterRepository;
     @Autowired
     private TheaterSeatsRepository theaterSeatsRepository;
+
+@Autowired
+private ShowService showService;
 
     public String addTheater(AddTheaterRequest theaterRequest) {
 
@@ -110,5 +116,32 @@ public class TheaterService {
         //Save all the generated Theater seats into the DB
         theaterSeatsRepository.saveAll(theaterSeatList);
         return "The theater seats have been associated";
+    }
+
+
+    public List<TheaterMovies> getTheaterMovieList(String theaterName) {
+
+
+        //find movies present in theater
+        ShowListResponse showListResponse = showService.getShowList();
+        List<Show> showList = showListResponse.getShowList();
+
+        //iterate shows in theater
+        List<TheaterMovies> moviesInTheaterResponseList = new ArrayList<>();
+        for(Show show : showList)
+        {
+            if(show.getTheater().getName().equals(theaterName)){
+                TheaterMovies theaterMovies = new TheaterMovies().builder()
+                        .movieName(show.getMovie().getMovieName())
+                        .showDate(show.getShowDate())
+                        .showTime(show.getShowTime())
+                        .theaterName(show.getTheater().getName())
+                        .build();
+
+                //Add to list
+                moviesInTheaterResponseList.add(theaterMovies);
+            }
+        }
+        return  moviesInTheaterResponseList;
     }
 }

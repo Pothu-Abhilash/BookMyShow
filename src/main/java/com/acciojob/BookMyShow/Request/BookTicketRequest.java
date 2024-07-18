@@ -10,4 +10,5 @@ public class BookTicketRequest {
     private List<String> requestedSeats;
     private Integer showId;
     private Integer userId;
+    private Boolean isFoodAttached;
 }
