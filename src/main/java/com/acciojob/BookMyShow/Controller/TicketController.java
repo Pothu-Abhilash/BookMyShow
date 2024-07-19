@@ -29,6 +29,12 @@ public class TicketController {
         return ticketService.generateTicket(ticketId);
     }
 
+    @DeleteMapping("cancelTicket")
+    public String cancelTicket(@RequestParam String ticketId) throws Exception
+    {
+        return ticketService.cancelTicket(ticketId);
+    }
+
     @GetMapping("gettotalrevenue")
     public ResponseEntity getTotalRevenue(){
         return new ResponseEntity<>(ticketService.getTotalRevenue(), HttpStatus.OK);

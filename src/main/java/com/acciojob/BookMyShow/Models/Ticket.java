@@ -1,16 +1,16 @@
 package com.acciojob.BookMyShow.Models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -40,4 +40,7 @@ public class Ticket {
     @JoinColumn
     @ManyToOne
     private User user;
+
+    @OneToMany(mappedBy = "ticket",fetch = FetchType.EAGER)
+    private List<ShowSeat> showSeats = new ArrayList<>();
 }

@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("Show")
 public class ShowController {
@@ -29,6 +32,15 @@ public class ShowController {
     @GetMapping("get-showsList")
     public ShowListResponse getShowsList(){
         return showService.getShowList();
+    }
+
+    @GetMapping("available_seats")
+    public ResponseEntity<List<String>> availableSeats(@RequestParam Integer showId){
+        try{
+            return new ResponseEntity<>(showService.availableSeats(showId), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
+        }
     }
 
 }

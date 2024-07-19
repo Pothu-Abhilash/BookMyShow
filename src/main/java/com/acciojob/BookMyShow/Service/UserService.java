@@ -1,5 +1,6 @@
 package com.acciojob.BookMyShow.Service;
 
+import com.acciojob.BookMyShow.Mailservice.EmailService;
 import com.acciojob.BookMyShow.Models.Ticket;
 import com.acciojob.BookMyShow.Models.User;
 import com.acciojob.BookMyShow.Repository.TicketRepository;
@@ -7,7 +8,6 @@ import com.acciojob.BookMyShow.Repository.UserRepository;
 import com.acciojob.BookMyShow.Request.AddUserRequest;
 import com.acciojob.BookMyShow.Response.BookingHistoryResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +25,9 @@ public class UserService {
     @Autowired
     private JavaMailSender javaMailSender;
 
+    @Autowired
+    private EmailService emailService;
+
     public String addUser(AddUserRequest userRequest) {
 
         User user = User.builder().userName(userRequest.getName())
@@ -34,17 +37,7 @@ public class UserService {
                 .build();
 
 
-
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(userRequest.getEmailId());
-        mailMessage.setFrom("springboot970@gmail.com");
-        mailMessage.setSubject("Welcome to Book My Show Application !!");
-
-        String body = "Hi "+userRequest.getName()+" !" +
-                "Welcome to Book My Show Application, Enjoy WELCOME10 to get 10% off on tickets";
-        mailMessage.setText(body);
-
-        javaMailSender.send(mailMessage);
+        emailService.addUser(userRequest.getEmailId(),userRequest.getName());
 
         user = userRepository.save(user);
         return "User has been added to Db with UserId "+user.getUserId();

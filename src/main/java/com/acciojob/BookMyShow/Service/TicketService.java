@@ -2,6 +2,7 @@ package com.acciojob.BookMyShow.Service;
 
 import com.acciojob.BookMyShow.Enums.SeatStatus;
 import com.acciojob.BookMyShow.Enums.SeatType;
+import com.acciojob.BookMyShow.Mailservice.EmailService;
 import com.acciojob.BookMyShow.Models.Show;
 import com.acciojob.BookMyShow.Models.ShowSeat;
 import com.acciojob.BookMyShow.Models.Ticket;
@@ -11,9 +12,12 @@ import com.acciojob.BookMyShow.Request.BookTicketRequest;
 import com.acciojob.BookMyShow.Response.TicketResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TicketService {
@@ -32,45 +36,27 @@ public class TicketService {
     @Autowired
     private ShowSeatRepository showSeatRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public String bookTicket(BookTicketRequest bookTicketRequest) throws Exception{
 
         //1. Find the Show Entity
-        Show show = showRepository.findById(bookTicketRequest.getShowId()).get();
+        Optional<Show> optionalShow = showRepository.findById(bookTicketRequest.getShowId());
+        if(optionalShow.isEmpty()){
+            return "You have entered incorrect ShowId, Please enter valid ShowId";
+        }
+        Show show = optionalShow.get();
 
         //2. Find the User Entity
-        User user = userRepository.findById(bookTicketRequest.getUserId()).get();
-
-        //3. Mark those Seats as booked now and calculate total Amount
-        Integer totalAmount = 0;
-        List<ShowSeat> showSeatList = show.getShowSeatList();
-
-        for(ShowSeat showSeat : showSeatList) {
-
-            String seatNo = showSeat.getSeatNo();
-//
-            if(bookTicketRequest.getRequestedSeats().contains(seatNo)) {
-                if(showSeat.getSeatStatus().equals(SeatStatus.BOOKED)){
-                 return "These seats are Already Booked";
-               }
-
-                showSeat.setSeatStatus(SeatStatus.BOOKED);
-
-                if(showSeat.getSeatType().equals(SeatType.CLASSIC)){
-                    System.out.println("classic "+totalAmount);
-                    totalAmount = totalAmount + 100;
-                }
-                else {
-                    System.out.println("preminum"+totalAmount);
-                    totalAmount = totalAmount + 150;
-                }
-                //addfood
-                if(bookTicketRequest.getIsFoodAttached()){
-                    totalAmount += 100;
-                    showSeat.setIsFoodAttached(Boolean.TRUE);
-                }
-            }
+        Optional<User> optionalUser = userRepository.findById(bookTicketRequest.getUserId());
+        if(optionalUser.isEmpty()){
+            return "You have entered incorrect UserId, Please enter valid UserId";
         }
+        User user = optionalUser.get();
 
+        // Create a new Ticket
+        Integer totalAmount = 0;
         //4. Create the Ticket Entity and set the attributes
         Ticket ticket = Ticket.builder().showDate(show.getShowDate())
                 .showTime(show.getShowTime())
@@ -83,9 +69,50 @@ public class TicketService {
                 .user(user)
                 .build();
 
+        //3. Mark those Seats as booked now and calculate total Amount
 
-        showSeatRepository.saveAll(showSeatList);
+        List<ShowSeat> showSeatList = show.getShowSeatList();
+
+        List<ShowSeat> bookedSeatList = new ArrayList<>();
+        for(ShowSeat showSeat : showSeatList)
+        {
+            String seatNo = showSeat.getSeatNo();
+
+            if(bookTicketRequest.getRequestedSeats().contains(seatNo))
+            {
+                if(showSeat.getSeatStatus().equals(SeatStatus.BOOKED)){
+                 return "These seats are Already Booked";
+               }
+
+                //making seat as booked
+                showSeat.setSeatStatus(SeatStatus.BOOKED);
+                showSeat.setTicket(ticket);
+
+                if(showSeat.getSeatType().equals(SeatType.CLASSIC)){
+//                    System.out.println("classic "+totalAmount);
+                    totalAmount = totalAmount + 100;
+                }
+                else {
+//                    System.out.println("preminum"+totalAmount);
+                    totalAmount = totalAmount + 150;
+                }
+                //addfood
+                if(bookTicketRequest.getIsFoodAttached()){
+                    totalAmount += 100;
+                    showSeat.setIsFoodAttached(Boolean.TRUE);
+                }
+//                showSeatRepository.save(showSeat);
+                bookedSeatList.add(showSeat);
+            }
+        }
         ticket = ticketRepository.save(ticket);
+        showSeatRepository.saveAll(showSeatList);
+//        ticket.setShowSeats(bookedSeatList);
+
+        //sending conformation mail to user
+        emailService.bookTicket(user.getUserName(),user.getMailId(),show.getShowDate(),show.getShowTime(),show.getMovie().getMovieName(),
+                                show.getTheater().getName(),bookTicketRequest.getRequestedSeats().toString(),totalAmount);
+
         //5. save the ticket into DB and return Ticket Entity (Ticket Response)
         return ticket.getTicketId();
 
@@ -134,6 +161,7 @@ public class TicketService {
 
     public Integer getRevenueOfTheaterEachDay(String theaterName, LocalDate date) {
 
+
         Integer revenue = 0;
         List<Ticket> ticketList  =ticketRepository.findAll();
 
@@ -143,5 +171,43 @@ public class TicketService {
             }
         }
         return revenue;
+    }
+
+    @Transactional
+    public String cancelTicket(String ticketId) throws Exception{
+
+        Optional<Ticket> optionalTicket = ticketRepository.findById(ticketId);
+
+
+        if(optionalTicket.isPresent()){
+
+            Ticket ticket = optionalTicket.get();
+            User user = ticket.getUser();
+            String email = user.getMailId();
+
+//            List<ShowSeat> showSeatList = new ArrayList<>();
+
+            //updating the seat status
+            List<ShowSeat> showSeats = ticket.getShowSeats();
+            if (showSeats.isEmpty()) {
+                return "No seats found for the ticket";
+            }
+            for(ShowSeat seat : showSeats){
+                seat.setSeatStatus(SeatStatus.AVAILABLE);
+                seat.setTicket(null);
+            }
+                showSeatRepository.saveAll(showSeats);
+
+            //Deleting the ticket
+            ticketRepository.deleteById(ticketId);
+
+            //sending mail to user
+            emailService.cancelTicket(email, ticket.getTheaterName(), ticket.getMovieName(), ticket.getShowDate(),user.getUserName());
+
+
+            return "Your Ticket has been canceled, Conformation message has been sent to your mail";
+        }
+
+        return "You Have Invalid Ticket Id";
     }
 }

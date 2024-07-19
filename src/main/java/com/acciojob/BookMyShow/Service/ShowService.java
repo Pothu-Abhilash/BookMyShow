@@ -48,6 +48,7 @@ public class ShowService {
         //Associate the corresponding show Seats along with it
         List<TheaterSeat> theaterSeatList = theater.getTheaterSeatList();
 
+
         List<ShowSeat> showSeatList = new ArrayList<>();
 
         for(TheaterSeat theaterSeat : theaterSeatList) {
@@ -72,5 +73,30 @@ public class ShowService {
 
         ShowListResponse showListResponse = ShowListResponse.builder().showList(showRepository.findAll()).build();
         return showListResponse;
+    }
+
+
+    public List<String> availableSeats(Integer showId) {
+
+//        Show show = showRepository.findById(showId).get();
+
+        List<ShowSeat> seatList = showSeatRepository.findAll();
+
+        List<String> showSeatList = new ArrayList<>();
+
+        for(ShowSeat seat : seatList){
+
+            SeatStatus seatStatus = seat.getSeatStatus();
+            //checking for showId same or not
+            if(seat.getShow().getShowId().equals(showId))
+            {
+                //checking for available seats in show
+                if(seatStatus.isAvailable() == true){
+                    showSeatList.add(seat.getSeatNo());
+                }
+            }
+
+        }
+        return showSeatList;
     }
 }
