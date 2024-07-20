@@ -24,13 +24,13 @@ public class TicketController {
     }
 
     @GetMapping("generateTicket")
-    public TicketResponse generateTicket(@RequestParam("ticketId") String ticketId) {
+    public TicketResponse generateTicket(@RequestParam("ticketId") String ticketId)  {
 
         return ticketService.generateTicket(ticketId);
     }
 
     @DeleteMapping("cancelTicket")
-    public String cancelTicket(@RequestParam String ticketId) throws Exception
+    public String cancelTicket(@RequestParam String ticketId)
     {
         return ticketService.cancelTicket(ticketId);
     }
@@ -41,13 +41,18 @@ public class TicketController {
     }
 
     @GetMapping("getrevenuoftheater")
-    public ResponseEntity getRevenueOfTheater(@RequestParam("theaterName") String theaterName){
-        return new ResponseEntity<>(ticketService.getRevenueOfTheater(theaterName),HttpStatus.OK);
+    public ResponseEntity getRevenueOfTheater(@RequestParam("theaterName") String theaterName)  {
+        try{
+            return new ResponseEntity<>(ticketService.getRevenueOfTheater(theaterName),HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @GetMapping("get-revenue-of-theater-eachday")
     public ResponseEntity getRevenueOfTheaterEachDay(@RequestParam("theaterName")String theaterName,
-                                                     @RequestParam("Date")LocalDate date){
+                                                     @RequestParam("Date")LocalDate date) throws Exception {
         return new ResponseEntity<>(ticketService.getRevenueOfTheaterEachDay(theaterName,date),HttpStatus.OK);
     }
 }

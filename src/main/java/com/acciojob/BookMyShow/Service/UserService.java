@@ -7,6 +7,7 @@ import com.acciojob.BookMyShow.Repository.TicketRepository;
 import com.acciojob.BookMyShow.Repository.UserRepository;
 import com.acciojob.BookMyShow.Request.AddUserRequest;
 import com.acciojob.BookMyShow.Response.BookingHistoryResponse;
+import com.acciojob.BookMyShow.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,11 @@ public class UserService {
 
     public String addUser(AddUserRequest userRequest) {
 
+        if(userRequest.getName() == null || userRequest.getEmailId() == null || userRequest.getMobileNo() == null
+                ||userRequest.getAge() ==null){
+            return "Please Enter all fileds";
+        }
+
         User user = User.builder().userName(userRequest.getName())
                 .mailId(userRequest.getEmailId())
                 .age(userRequest.getAge())
@@ -45,6 +51,9 @@ public class UserService {
 
     public List<BookingHistoryResponse> getBookingHistory(String userName) {
 
+        if(userName == null){
+            throw new CustomException("Please enter valid UserName");
+        }
 
 
         List<BookingHistoryResponse> bookingHistoryResponseList = new ArrayList<>();
@@ -64,6 +73,7 @@ public class UserService {
 
               bookingHistoryResponseList.add(bookingHistoryResponse);
           }
+          throw new CustomException(ticket.getUser().getUserName()+" is not present in DB");
       }
         return bookingHistoryResponseList;
     }

@@ -8,11 +8,13 @@ import com.acciojob.BookMyShow.Repository.ShowSeatRepository;
 import com.acciojob.BookMyShow.Repository.TheaterRepository;
 import com.acciojob.BookMyShow.Request.AddShowRequest;
 import com.acciojob.BookMyShow.Response.ShowListResponse;
+import com.acciojob.BookMyShow.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ShowService {
@@ -31,7 +33,17 @@ public class ShowService {
 
     public String addShow(AddShowRequest showRequest) {
 
+        if(showRequest.getShowDate()==null|| showRequest.getShowTime() == null || showRequest.getTheaterId() == null ||
+            showRequest.getName() == null ||showRequest.getMovieName() == null ){
+            throw new CustomException("Please enter all filed");
+        }
         Movie movie = movieRepository.findMovieByMovieName(showRequest.getMovieName());
+        Optional<Theater> optionalTheater = theaterRepository.findById(showRequest.getTheaterId());
+
+        if(optionalTheater.isEmpty()){
+            throw new CustomException("Theater Id "+showRequest.getTheaterId()+" is Invalid");
+        }
+
        Theater theater = theaterRepository.findById(showRequest.getTheaterId()).get();
 
         //Add validations on if movie and theater are valid scenarios
@@ -76,8 +88,12 @@ public class ShowService {
     }
 
 
-    public List<String> availableSeats(Integer showId) {
+    public List<String> availableSeats(Integer showId)  {
 
+        if(showId == null)
+        {
+            throw new CustomException("Please Enter valid Show Id");
+        }
 //        Show show = showRepository.findById(showId).get();
 
         List<ShowSeat> seatList = showSeatRepository.findAll();
@@ -95,6 +111,7 @@ public class ShowService {
                     showSeatList.add(seat.getSeatNo());
                 }
             }
+            throw new CustomException("Show id "+showId+" does not exists");
 
         }
         return showSeatList;

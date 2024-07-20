@@ -6,9 +6,10 @@ import com.acciojob.BookMyShow.Repository.MovieRepository;
 import com.acciojob.BookMyShow.Repository.ShowRepository;
 import com.acciojob.BookMyShow.Request.AddMovieRequest;
 import com.acciojob.BookMyShow.Request.UpdateMovieRequest;
+import com.acciojob.BookMyShow.Response.MoviesInTheaterResponse;
 import com.acciojob.BookMyShow.Response.RecommendMovies;
 import com.acciojob.BookMyShow.Response.ShowListResponse;
-import com.acciojob.BookMyShow.Response.MoviesInTheaterResponse;
+import com.acciojob.BookMyShow.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,14 @@ public class MovieService {
 
 
     public String addMovie(AddMovieRequest movieRequest) {
+
+        //Exception Handling
+        if(movieRequest.getMovieName() == null || movieRequest.getGenre() == null || movieRequest.getDuration() == null ||
+            movieRequest.getRatings() == null || movieRequest.getLanguage() == null || movieRequest.getReleaseDate() == null)
+        {
+            throw new CustomException("Please enter all fileds");
+        }
+
         Movie movie = new Movie();
 
         movie.setMovieName(movieRequest.getMovieName());
@@ -48,6 +57,10 @@ public class MovieService {
         //Get Movie entity
         Movie movie = movieRepository.findMovieBymovieName(updateMovieRequest.getMovieName());
 
+        if(movie == null){
+            throw new CustomException(movie.getMovieName()+" Movie is not present in DB");
+        }
+
         movie.setLanguage(updateMovieRequest.getLanguage());
         movie.setRating(updateMovieRequest.getNewRating());
 
@@ -55,8 +68,12 @@ public class MovieService {
         return "Movie has been updated";
     }
 
-    public List<MoviesInTheaterResponse> getMoviesPresentInTheater(String movieName) {
+    public List<MoviesInTheaterResponse> getMoviesPresentInTheater(String movieName)  {
 
+        if(movieName.isEmpty() || movieName == null)
+        {
+            throw new CustomException("Please enter valid movie name");
+        }
         // get movie by name
         Movie movie = movieRepository.findMovieByMovieName(movieName);
 
@@ -76,6 +93,7 @@ public class MovieService {
                         .build();
                 responseList.add(theatersResponse);
             }
+            throw new CustomException(movie.getMovieName()+" Movie does not exists in DB");
         }
         return responseList;
     }

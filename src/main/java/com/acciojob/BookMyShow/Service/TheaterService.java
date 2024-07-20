@@ -10,11 +10,13 @@ import com.acciojob.BookMyShow.Request.AddTheaterRequest;
 import com.acciojob.BookMyShow.Request.AddTheaterSeatRequest;
 import com.acciojob.BookMyShow.Response.ShowListResponse;
 import com.acciojob.BookMyShow.Response.TheaterMovies;
+import com.acciojob.BookMyShow.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TheaterService {
@@ -29,6 +31,19 @@ private ShowService showService;
 
     public String addTheater(AddTheaterRequest theaterRequest) {
 
+        if(theaterRequest.getName() == null || theaterRequest.getAddress() ==null ||
+            theaterRequest.getNoOfScreens() == null){
+            throw new CustomException("Please enter all fileds");
+        }
+
+        //checking theater is present in db
+        List<Theater> theaterList = theaterRepository.findAll();
+        for(Theater theater : theaterList){
+            if(!theater.getName().equals(theaterRequest.getName())){
+                throw new CustomException(theater.getName()+" is not present in DB");
+            }
+        }
+
        Theater theater = Theater.builder().noOfScreens(theaterRequest.getNoOfScreens())
                         .name(theaterRequest.getName())
                         .address(theaterRequest.getAddress())
@@ -40,6 +55,11 @@ private ShowService showService;
 
     public String associateSeats(AddTheaterSeatRequest theaterSeatRequest) {
 
+        if(theaterSeatRequest.getTheaterId() == null || theaterSeatRequest.getNoOfClassicSeats() == null ||
+        theaterSeatRequest.getNoOfPremiumSeats() == null){
+            throw new CustomException("Please enter all fields");
+        }
+
         int theaterId = theaterSeatRequest.getTheaterId();
         int noOfClassicSeats = theaterSeatRequest.getNoOfClassicSeats();
         int noOfPremiumSeats = theaterSeatRequest.getNoOfPremiumSeats();
@@ -47,7 +67,13 @@ private ShowService showService;
         List<TheaterSeat> theaterSeatList = new ArrayList<>();
 
         //1. Get the theaterEntity from DB
-        Theater theater = theaterRepository.findById(theaterId).get();
+        Optional<Theater> optionalTheater = theaterRepository.findById(theaterId);
+
+        if(optionalTheater.isEmpty()){
+            throw new CustomException("Theater id "+theaterId+" is Invalid");
+        }
+
+        Theater theater = optionalTheater.get();
 
         //2. Generate those seatNos through for Classic Seats
 
@@ -119,9 +145,12 @@ private ShowService showService;
     }
 
 
-    public List<TheaterMovies> getTheaterMovieList(String theaterName) {
+    public List<TheaterMovies> getTheaterMovieList(String theaterName)  {
 
 
+        if(theaterName.isEmpty() || theaterName == null){
+            throw new CustomException("Please enter valid theater name");
+        }
         //find movies present in theater
         ShowListResponse showListResponse = showService.getShowList();
         List<Show> showList = showListResponse.getShowList();
@@ -141,6 +170,7 @@ private ShowService showService;
                 //Add to list
                 moviesInTheaterResponseList.add(theaterMovies);
             }
+            throw new CustomException("Theater does not exists");
         }
         return  moviesInTheaterResponseList;
     }

@@ -34,13 +34,19 @@ public class MovieController {
     }
 
     @GetMapping("getMoviePresentInTheaters")
-    public  ResponseEntity<List> getMoviesPresentInTheater(@RequestParam("movieName") String movieName){
-        List<MoviesInTheaterResponse> moviesInTheaterResponseList = movieService.getMoviesPresentInTheater(movieName);
-        return new ResponseEntity<>( moviesInTheaterResponseList,HttpStatus.OK);
+    public  ResponseEntity<List<MoviesInTheaterResponse>> getMoviesPresentInTheater(@RequestParam("movieName") String movieName)  {
+
+            List<MoviesInTheaterResponse> moviesInTheaterResponseList = movieService.getMoviesPresentInTheater(movieName);
+            return new ResponseEntity<>( moviesInTheaterResponseList,HttpStatus.OK);
+
+
     }
 
     @GetMapping("recommandMovies")
     public ResponseEntity<List<RecommendMovies>> recommandMovies(){
-        return new ResponseEntity<>(movieService.recommandMovies(),HttpStatus.OK);
+
+            return new ResponseEntity<>(movieService.recommandMovies(),HttpStatus.OK);
+
+
     }
 }

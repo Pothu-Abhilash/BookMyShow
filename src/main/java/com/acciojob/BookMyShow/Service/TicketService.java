@@ -10,6 +10,7 @@ import com.acciojob.BookMyShow.Models.User;
 import com.acciojob.BookMyShow.Repository.*;
 import com.acciojob.BookMyShow.Request.BookTicketRequest;
 import com.acciojob.BookMyShow.Response.TicketResponse;
+import com.acciojob.BookMyShow.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +40,7 @@ public class TicketService {
     @Autowired
     private EmailService emailService;
 
-    public String bookTicket(BookTicketRequest bookTicketRequest) throws Exception{
+    public String bookTicket(BookTicketRequest bookTicketRequest) {
 
         //1. Find the Show Entity
         Optional<Show> optionalShow = showRepository.findById(bookTicketRequest.getShowId());
@@ -118,8 +119,16 @@ public class TicketService {
 
     }
 
-    public TicketResponse generateTicket(String ticketId) {
+    public TicketResponse generateTicket(String ticketId)  {
+        if(ticketId.isEmpty() || ticketId == null){
+            throw new CustomException("Please enter Valid ticketId");
+        }
 
+        Optional<Ticket>optionalTicket = ticketRepository.findById(ticketId);
+
+        if(optionalTicket.isEmpty()){
+            throw new CustomException("You have entered in Valid TicketId");
+        }
         Ticket ticket = ticketRepository.findById(ticketId).get();
 
         TicketResponse ticketResponse =TicketResponse.builder().bookedSeats(ticket.getBookedSeat())
@@ -147,6 +156,9 @@ public class TicketService {
 
 
     public Integer getRevenueOfTheater(String theaterName) {
+        if(theaterName.isEmpty() || theaterName == null){
+            throw new CustomException("Please enter valid theater name");
+        }
 
         Integer revenue = 0;
        List<Ticket> ticketList = ticketRepository.findAll();
@@ -155,13 +167,22 @@ public class TicketService {
            if(ticket.getTheaterName().equals(theaterName)){
                revenue += ticket.getTotalAmount();
            }
+           throw new CustomException("Theater does not exists");
        }
        return revenue;
     }
 
-    public Integer getRevenueOfTheaterEachDay(String theaterName, LocalDate date) {
+    public Integer getRevenueOfTheaterEachDay(String theaterName, LocalDate date)  {
 
 
+        if(theaterName.isEmpty() || theaterName == null)
+        {
+            throw new CustomException("Please Enter valid theater name");
+        }
+        if(date == null)
+        {
+            throw new CustomException("Please enter valid theater name");
+        }
         Integer revenue = 0;
         List<Ticket> ticketList  =ticketRepository.findAll();
 
@@ -169,12 +190,13 @@ public class TicketService {
             if(theaterName.equals(ticket.getTheaterName()) || date.isEqual(ticket.getShowDate()) ){
                 revenue += ticket.getTotalAmount();
             }
+            throw new CustomException("You have incorrect date or Theater name");
         }
         return revenue;
     }
 
     @Transactional
-    public String cancelTicket(String ticketId) throws Exception{
+    public String cancelTicket(String ticketId) {
 
         Optional<Ticket> optionalTicket = ticketRepository.findById(ticketId);
 
@@ -208,6 +230,6 @@ public class TicketService {
             return "Your Ticket has been canceled, Conformation message has been sent to your mail";
         }
 
-        return "You Have Invalid Ticket Id";
+        return "You have entered Invalid Ticket Id";
     }
 }

@@ -33,7 +33,7 @@ public class TheaterController {
     }
 
     @GetMapping("theatermovielist")
-    public ResponseEntity<List<TheaterMovies>> getTheaterMovieList(@RequestParam("theaterName")String theaterName){
+    public ResponseEntity<List<TheaterMovies>> getTheaterMovieList(@RequestParam("theaterName")String theaterName)  {
         return new ResponseEntity<>(theaterService.getTheaterMovieList(theaterName),HttpStatus.OK);
     }
 
