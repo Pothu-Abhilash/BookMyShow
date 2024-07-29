@@ -3,11 +3,7 @@ package com.acciojob.BookMyShow.Request;
 import lombok.Data;
 
 @Data
-public class AddUserRequest {
-
+public class LoginRequest {
     private String userName;
-    private Integer age;
-    private String emailId;
-    private String mobileNo;
     private String password;
 }

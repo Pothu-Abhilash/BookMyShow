@@ -9,13 +9,14 @@ import com.acciojob.BookMyShow.Request.UpdateMovieRequest;
 import com.acciojob.BookMyShow.Response.MoviesInTheaterResponse;
 import com.acciojob.BookMyShow.Response.RecommendMovies;
 import com.acciojob.BookMyShow.Response.ShowListResponse;
-import com.acciojob.BookMyShow.exception.CustomException;
+import com.acciojob.BookMyShow.CustomException.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MovieService {
@@ -74,6 +75,12 @@ public class MovieService {
         {
             throw new CustomException("Please enter valid movie name");
         }
+
+        Optional<Movie> optionalMovie = Optional.ofNullable(movieRepository.findMovieByMovieName(movieName));
+
+        if(optionalMovie.isEmpty()){
+            throw new CustomException(movieName+" Movie does not exists in DB");
+        }
         // get movie by name
         Movie movie = movieRepository.findMovieByMovieName(movieName);
 
@@ -93,7 +100,7 @@ public class MovieService {
                         .build();
                 responseList.add(theatersResponse);
             }
-            throw new CustomException(movie.getMovieName()+" Movie does not exists in DB");
+
         }
         return responseList;
     }
@@ -105,7 +112,7 @@ public class MovieService {
         List<Show> showList = showRepository.findAll();
 
         for(Show show : showList){
-            System.out.println(show.getShowDate());
+//            System.out.println(show.getShowDate());
 
             if(show.getShowDate().isBefore(currentDate))
             {

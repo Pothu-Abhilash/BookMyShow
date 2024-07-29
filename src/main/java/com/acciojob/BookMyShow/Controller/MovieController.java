@@ -47,6 +47,5 @@ public class MovieController {
 
             return new ResponseEntity<>(movieService.recommandMovies(),HttpStatus.OK);
 
-
     }
 }

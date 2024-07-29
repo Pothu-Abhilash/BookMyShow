@@ -3,14 +3,11 @@ package com.acciojob.BookMyShow.Service;
 import com.acciojob.BookMyShow.Enums.SeatStatus;
 import com.acciojob.BookMyShow.Enums.SeatType;
 import com.acciojob.BookMyShow.Mailservice.EmailService;
-import com.acciojob.BookMyShow.Models.Show;
-import com.acciojob.BookMyShow.Models.ShowSeat;
-import com.acciojob.BookMyShow.Models.Ticket;
-import com.acciojob.BookMyShow.Models.User;
+import com.acciojob.BookMyShow.Models.*;
 import com.acciojob.BookMyShow.Repository.*;
 import com.acciojob.BookMyShow.Request.BookTicketRequest;
 import com.acciojob.BookMyShow.Response.TicketResponse;
-import com.acciojob.BookMyShow.exception.CustomException;
+import com.acciojob.BookMyShow.CustomException.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -159,6 +156,10 @@ public class TicketService {
         if(theaterName.isEmpty() || theaterName == null){
             throw new CustomException("Please enter valid theater name");
         }
+        Optional<Theater>optionalTheater = Optional.ofNullable(theaterRepository.findTheaterByName(theaterName));
+        if(optionalTheater.isEmpty()){
+            throw new CustomException("Theater does not exists");
+        }
 
         Integer revenue = 0;
        List<Ticket> ticketList = ticketRepository.findAll();
@@ -167,7 +168,7 @@ public class TicketService {
            if(ticket.getTheaterName().equals(theaterName)){
                revenue += ticket.getTotalAmount();
            }
-           throw new CustomException("Theater does not exists");
+
        }
        return revenue;
     }
@@ -190,7 +191,6 @@ public class TicketService {
             if(theaterName.equals(ticket.getTheaterName()) || date.isEqual(ticket.getShowDate()) ){
                 revenue += ticket.getTotalAmount();
             }
-            throw new CustomException("You have incorrect date or Theater name");
         }
         return revenue;
     }

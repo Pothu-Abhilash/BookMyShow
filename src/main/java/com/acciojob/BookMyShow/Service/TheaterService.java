@@ -10,7 +10,7 @@ import com.acciojob.BookMyShow.Request.AddTheaterRequest;
 import com.acciojob.BookMyShow.Request.AddTheaterSeatRequest;
 import com.acciojob.BookMyShow.Response.ShowListResponse;
 import com.acciojob.BookMyShow.Response.TheaterMovies;
-import com.acciojob.BookMyShow.exception.CustomException;
+import com.acciojob.BookMyShow.CustomException.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -151,6 +151,11 @@ private ShowService showService;
         if(theaterName.isEmpty() || theaterName == null){
             throw new CustomException("Please enter valid theater name");
         }
+
+        Optional<Theater>optionalTheater = Optional.ofNullable(theaterRepository.findTheaterByName(theaterName));
+        if(optionalTheater.isEmpty()){
+            throw new CustomException("Theater does not exists");
+        }
         //find movies present in theater
         ShowListResponse showListResponse = showService.getShowList();
         List<Show> showList = showListResponse.getShowList();
@@ -170,7 +175,7 @@ private ShowService showService;
                 //Add to list
                 moviesInTheaterResponseList.add(theaterMovies);
             }
-            throw new CustomException("Theater does not exists");
+
         }
         return  moviesInTheaterResponseList;
     }

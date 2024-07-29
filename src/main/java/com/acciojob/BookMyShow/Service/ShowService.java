@@ -8,7 +8,7 @@ import com.acciojob.BookMyShow.Repository.ShowSeatRepository;
 import com.acciojob.BookMyShow.Repository.TheaterRepository;
 import com.acciojob.BookMyShow.Request.AddShowRequest;
 import com.acciojob.BookMyShow.Response.ShowListResponse;
-import com.acciojob.BookMyShow.exception.CustomException;
+import com.acciojob.BookMyShow.CustomException.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -94,7 +94,10 @@ public class ShowService {
         {
             throw new CustomException("Please Enter valid Show Id");
         }
-//        Show show = showRepository.findById(showId).get();
+        Optional<Show>optionalShow = showRepository.findById(showId);
+        if(optionalShow.isEmpty()){
+            throw new CustomException("Show Id " +showId+" does not exist");
+        }
 
         List<ShowSeat> seatList = showSeatRepository.findAll();
 
@@ -111,8 +114,6 @@ public class ShowService {
                     showSeatList.add(seat.getSeatNo());
                 }
             }
-            throw new CustomException("Show id "+showId+" does not exists");
-
         }
         return showSeatList;
     }

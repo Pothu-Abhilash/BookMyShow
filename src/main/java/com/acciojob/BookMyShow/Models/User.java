@@ -23,4 +23,9 @@ public class User {
     private Integer age;
     private String mailId;
     private String mobileNo;
+    private String password;
+
+//    @JoinTable
+//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    private Set<Role> roles;
 }

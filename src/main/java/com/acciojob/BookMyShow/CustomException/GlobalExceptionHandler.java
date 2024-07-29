@@ -1,4 +1,4 @@
-package com.acciojob.BookMyShow.exception;
+package com.acciojob.BookMyShow.CustomException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
